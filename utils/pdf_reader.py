@@ -8,9 +8,9 @@ from nltk.corpus import stopwords
 import matplotlib.pyplot as plt
 
 
-def get_common_words_from_pdf(pdf_file_path, num_words=5, custom_stop_words=None):
+def get_common_words_from_pdf(file_path, num_words=5, custom_stop_words=None):
     # Read the PDF file
-    with open(pdf_file_path, "rb") as file:
+    with open(file_path, "rb") as file:
         reader = PyPDF2.PdfReader(file)
         num_pages = len(reader.pages)
         text = ""
@@ -45,19 +45,6 @@ def get_common_words_from_pdf(pdf_file_path, num_words=5, custom_stop_words=None
     return most_common_words
 
 
-# Example usage
-pdf_file_path = "./data/raw/mlb_rules_2023.pdf"
-num_words = 10
-additional_stop_words = ["base", "ball"]
-most_common_words = get_common_words_from_pdf(
-    pdf_file_path, num_words=num_words, custom_stop_words=additional_stop_words
-)
-
-print("Most common words (excluding stopwords):")
-for word, count in most_common_words:
-    print(f"{word}: {count}")
-
-
 # Plot the most common words
 def plot_common_words(common_words):
     words, counts = zip(*common_words)
@@ -70,4 +57,21 @@ def plot_common_words(common_words):
     plt.show()
 
 
-plot_common_words(most_common_words)
+def main():
+    file_path = "./data/raw/mlb_rules_2023.pdf"
+    num_words = 15
+    additional_stop_words = ["base", "ball"]
+    most_common_words = get_common_words_from_pdf(
+        file_path, num_words=num_words, custom_stop_words=additional_stop_words
+    )
+
+    print("Most common words (excluding stopwords):")
+    for word, count in most_common_words:
+        print(f"{word}: {count}")
+
+
+    plot_common_words(most_common_words)
+
+
+if __name__ == "__main__":
+    main()
