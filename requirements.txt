@@ -2,6 +2,7 @@ matplotlib
 nltk
 numpy
 pandas
+PyPDF2
 requests
 scipy
 selenium

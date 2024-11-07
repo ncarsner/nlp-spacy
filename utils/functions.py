@@ -2,10 +2,19 @@ import numpy as np
 import matplotlib.pyplot as plt
 from collections import Counter
 from scipy.stats import zipf
+import string
 
 
-text = "This is a sample text to demonstrate Zipf's Law. This text contains some repeated words, like 'text' and 'words'."
-text = r"data/raw/speech_day_of_infamy.txt"
+def remove_punctuation(text):
+    return text.translate(str.maketrans("", "", string.punctuation))
+
+
+source_file = "./data/raw/speech_day_of_infamy.txt"
+
+# Read the text file
+with open(source_file, "r", encoding="utf-8") as file:
+    text = file.read()
+
 
 # Prepare data - Tokenize the text
 words = text.lower().split()
@@ -19,14 +28,15 @@ ranks = np.arange(1, len(sorted_word_counts) + 1)
 frequencies = [count for word, count in sorted_word_counts]
 
 # Plot the Zipf's Law curve
-plt.plot(ranks, frequencies, marker='.')
-plt.xlabel('Rank')
-plt.ylabel('Frequency')
+plt.plot(ranks, frequencies, marker=".")
+plt.xlabel("Rank")
+plt.ylabel("Frequency")
 plt.title("Zipf's Law")
-plt.xscale('log')
-plt.yscale('log')
+plt.xscale("log")
+plt.yscale("log")
 plt.show()
 
 # Fit a Zipf distribution
-params = zipf.fit(frequencies)
-print("Zipf distribution parameters:", params)
+a, loc, scale = zipf.fit(frequencies, floc=0)
+zipf.fit(frequencies, floc=0)
+print("Zipf distribution parameters: a =", a, ", loc =", loc, ", scale =", scale)

@@ -1,5 +1,6 @@
 config.ini
 *.pdf
+!mlb*.pdf
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
