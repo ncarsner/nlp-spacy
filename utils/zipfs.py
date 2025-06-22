@@ -40,7 +40,7 @@ def main(file_content):
 
     clean = [word for word in file_content.split() if word not in stoplist]
     clean_text = " ".join(clean)
-    words = re.findall("\w+", clean_text)
+    words = re.findall(r"\w+", clean_text)
     top_10 = Counter(words).most_common(10)
 
     for word, count in top_10:
