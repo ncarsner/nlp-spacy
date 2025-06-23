@@ -97,6 +97,9 @@ phrases = [
     "Call me Ishmael.",
     "All happy families are alike; each unhappy family is unhappy in its own way.",
     "It was a bright cold day in April, and the clocks were striking thirteen.",
+    "Just do it.",
+    "Just for the taste of it.",
+    "Can you dig it?"
 ]
 
 if __name__ == "__main__":
