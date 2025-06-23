@@ -8,13 +8,24 @@ Reference Table for Token Components:
 - POS    : Part-of-speech tag for the token, indicating its grammatical role in the sentence.
     Common POS tags include:
     - NOUN  : Noun (e.g., "dog", "happiness")
+    - PROPN : Proper noun (e.g., "John", "Paris")
+    - PRON  : Pronoun (e.g., "he", "they")
     - VERB  : Verb (e.g., "run", "is")
+    - AUX   : Auxiliary verb (e.g., "be", "have")
     - ADJ   : Adjective (e.g., "happy", "red")
     - ADV   : Adverb (e.g., "quickly", "very")
-    - PRON  : Pronoun (e.g., "he", "they")
     - DET   : Determiner (e.g., "the", "a")
     - ADP   : Adposition (prepositions and postpositions, e.g., "in", "on")
     - CONJ  : Conjunction (e.g., "and", "but")
+    - CCONJ : Coordinating conjunction (e.g., "and", "or")
+    - SCONJ : Subordinating conjunction (e.g., "because", "although")
+    - PART  : Particle (e.g., "up", "down" in phrasal verbs like "give up")
+    - NUM   : Numeral (e.g., "one", "100")
+    - INTJ  : Interjection (e.g., "wow", "ouch")
+    - PUNCT : Punctuation (e.g., ".", ",", "!")
+    - SYM   : Symbol (e.g., "$", "%", "#")
+    - X     : Other (tokens that do not fit into the above categories)
+    - SPACE : Space (whitespace characters, not usually included in analysis)
 - Lemma  : The base or dictionary form of the token
     (e.g., 'be' for 'is').
 - Dep    : Syntactic dependency label, indicating the token's grammatical role
@@ -32,12 +43,12 @@ Reference Table for Token Components:
     - conj  : Conjunct (the second or later element in a coordinated phrase, e.g., "cats" in "dogs and cats")
     - det   : Determiner (e.g., "the", "a", "an")
     - attr  : Attribute (a nominal predicate, e.g., "a doctor" in "He is a doctor")
-- Head   : The text of the token's syntactic parent.
+- Head Text  : The text of the token's syntactic parent.
     (the word this token is attached to in the parse tree).
 - Entity : Named entity type if the token is part of a recognized entity.
     Common entity types include:
     - PERSON : Person names (e.g., "John Doe")
-    - ORG    : Organizations (e.g., "OpenAI", "United Nations")
+    - ORG    : Organizations (e.g., "NFL", "United Nations")
     - GPE    : Geopolitical entities (countries, cities, etc., e.g., "France", "New York")
     - DATE   : Dates (e.g., "January 1, 2020")
     - TIME   : Times (e.g., "12:00 PM")
@@ -45,7 +56,6 @@ Reference Table for Token Components:
     - PERCENT: Percentages (e.g., "50%")
     - NORP   : Nationalities or religious/political groups (e.g., "American", "Christian")
     - FAC    : Facilities (e.g., "Eiffel Tower", "Golden Gate Bridge")
-
     '-' if not part of any entity.
 
 Other useful Token attributes and methods:
