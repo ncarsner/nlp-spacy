@@ -3,6 +3,7 @@ config.ini
 !mlb*.pdf
 data/processed/*.png
 .*
+.*.md
 
 
 # Byte-compiled / optimized / DLL files
