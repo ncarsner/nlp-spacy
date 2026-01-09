@@ -1,7 +1,7 @@
 # import nltk
 # nltk.download('stopwords')
 
-import PyPDF2
+import pypdf
 import re
 from collections import Counter
 from nltk.corpus import stopwords
@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 def get_common_words_from_pdf(file_path, num_words=5, custom_stop_words=None):
     # Read the PDF file
     with open(file_path, "rb") as file:
-        reader = PyPDF2.PdfReader(file)
+        reader = pypdf.PdfReader(file)
         num_pages = len(reader.pages)
         text = ""
         for page_num in range(num_pages):
