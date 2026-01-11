@@ -1,6 +1,11 @@
-# import pytest
 import numpy as np
 from scipy.special import zeta
+from utils.sample_counter import (
+    generate_zipf_sample,
+    calculate_sample_counts,
+    generate_rank_array,
+    calculate_expected_counts,
+)
 
 
 class TestSampleCounter:
@@ -10,7 +15,7 @@ class TestSampleCounter:
         """Test that Zipf distribution generates expected shape"""
         a = 4.0
         n = 1000
-        s = np.random.zipf(a, n)
+        s = generate_zipf_sample(a, n)
         
         assert len(s) == n
         assert s.dtype in [np.int64, np.int32]
@@ -21,16 +26,16 @@ class TestSampleCounter:
         n = 1000
         
         for a in params:
-            s = np.random.zipf(a, n)
+            s = generate_zipf_sample(a, n)
             assert len(s) == n
             assert all(s > 0)  # Zipf distribution produces positive integers
 
-    def test_bincount_usage(self):
-        """Test bincount on Zipf samples"""
+    def test_calculate_sample_counts(self):
+        """Test calculate_sample_counts function"""
         a = 3.0
         n = 1000
-        s = np.random.zipf(a, n)
-        count = np.bincount(s)
+        s = generate_zipf_sample(a, n)
+        count = calculate_sample_counts(s)
         
         assert len(count) == s.max() + 1
         assert sum(count) == n
@@ -45,13 +50,13 @@ class TestSampleCounter:
         assert z > 1.0
 
     def test_expected_count_calculation(self):
-        """Test expected count formula"""
+        """Test calculate_expected_counts function"""
         a = 4.0
         n = 20000
-        s = np.random.zipf(a, n)
-        k = np.arange(1, s.max() + 1)
+        s = generate_zipf_sample(a, n)
+        k = generate_rank_array(s.max())
         
-        expected = n * (k ** -a) / zeta(a)
+        expected = calculate_expected_counts(k, a, n)
         
         assert len(expected) == len(k)
         assert all(expected > 0)
@@ -61,8 +66,8 @@ class TestSampleCounter:
         """Test that Zipf follows power law (higher ranks = lower frequencies)"""
         a = 3.0
         n = 10000
-        s = np.random.zipf(a, n)
-        count = np.bincount(s)
+        s = generate_zipf_sample(a, n)
+        count = calculate_sample_counts(s)
         
         # Count of rank 1 should generally be higher than count of rank 10
         # (statistical test, may occasionally fail due to randomness)
@@ -75,21 +80,21 @@ class TestSampleCounter:
         sizes = [100, 1000, 10000]
         
         for n in sizes:
-            s = np.random.zipf(a, n)
+            s = generate_zipf_sample(a, n)
             assert len(s) == n
 
     def test_zipf_minimum_value(self):
         """Test that Zipf distribution produces values >= 1"""
         a = 3.0
         n = 1000
-        s = np.random.zipf(a, n)
+        s = generate_zipf_sample(a, n)
         
         assert all(s >= 1)
 
-    def test_k_array_generation(self):
-        """Test rank array generation"""
+    def test_generate_rank_array(self):
+        """Test generate_rank_array function"""
         max_val = 100
-        k = np.arange(1, max_val + 1)
+        k = generate_rank_array(max_val)
         
         assert len(k) == max_val
         assert k[0] == 1

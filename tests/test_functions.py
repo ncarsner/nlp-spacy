@@ -1,10 +1,4 @@
-# import pytest
-import string
-
-
-def remove_punctuation(text):
-    """Copy of the function to test"""
-    return text.translate(str.maketrans("", "", string.punctuation))
+from utils.functions import remove_punctuation
 
 
 class TestFunctions:

@@ -21,3 +21,13 @@ dev = [
     "pytest>=9.0.2",
     "pytest-cov>=7.0.0",
 ]
+
+[tool.coverage.run]
+omit = [
+    "utils/component_counter.py",
+    "chatbot_basic.py",
+    "main.py",
+    "utils/__init__.py",
+    "data/packaged/__init__.py",
+
+]

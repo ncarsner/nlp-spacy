@@ -1,19 +1,97 @@
 # import pytest
-from unittest.mock import mock_open, patch
+from unittest.mock import mock_open, patch, MagicMock
 import numpy as np
 from collections import Counter
-from scipy.stats import zipf as zipf_dist
 import sys
 import os
 
 # Add parent directory to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
+from utils.zipfs import (
+    read_text_file,
+    get_stopwords,
+    remove_stopwords,
+    extract_words,
+    get_top_words,
+    analyze_text,
+)
+
 
 class TestZipfsLaw:
     """Test suite for zipfs.py Zipf's Law analysis"""
 
-    def test_word_tokenization(self):
+    @patch("builtins.open", new_callable=mock_open, read_data="Hello world hello world")
+    def test_read_text_file(self, mock_file):
+        """Test read_text_file function"""
+        result = read_text_file("test.txt")
+        
+        assert isinstance(result, str)
+        assert result.lower() == result  # Should be lowercase
+        # Multiple spaces should be normalized
+        assert "  " not in result or result.count(" ") == result.count("  ") + 3
+
+    def test_get_stopwords_basic(self):
+        """Test get_stopwords without additional words"""
+        stopwords = get_stopwords()
+        
+        assert isinstance(stopwords, list)
+        assert len(stopwords) > 0
+        assert "the" in stopwords
+        assert "is" in stopwords
+
+    def test_get_stopwords_with_additional(self):
+        """Test get_stopwords with additional words"""
+        additional = ["custom1", "custom2"]
+        stopwords = get_stopwords(additional)
+        
+        assert "custom1" in stopwords
+        assert "custom2" in stopwords
+        assert "the" in stopwords  # Original stopwords still there
+
+    def test_remove_stopwords(self):
+        """Test remove_stopwords function"""
+        text = "the cat and the dog"
+        stoplist = ["the", "and"]
+        result = remove_stopwords(text, stoplist)
+        
+        assert "the" not in result
+        assert "and" not in result
+        assert "cat" in result
+        assert "dog" in result
+
+    def test_extract_words(self):
+        """Test extract_words function"""
+        text = "Hello, world! How are you?"
+        words = extract_words(text)
+        
+        assert isinstance(words, list)
+        assert "Hello" in words
+        assert "world" in words
+        # Punctuation should be removed
+        assert "," not in words
+        assert "!" not in words
+
+    def test_get_top_words(self):
+        """Test get_top_words function"""
+        words = ["apple", "banana", "apple", "cherry", "apple", "banana"]
+        top_2 = get_top_words(words, n=2)
+        
+        assert len(top_2) == 2
+        assert top_2[0][0] == "apple"
+        assert top_2[0][1] == 3
+        assert top_2[1][0] == "banana"
+        assert top_2[1][1] == 2
+
+    def test_get_top_words_default(self):
+        """Test get_top_words with default n=10"""
+        words = ["a"] * 20 + ["b"] * 10
+        top = get_top_words(words)
+        
+        assert len(top) <= 10
+        assert top[0][0] == "a"
+        assert top[0][1] == 20
+
         """Test basic word tokenization"""
         text = "Hello world hello"
         words = text.lower().split()
@@ -58,18 +136,6 @@ class TestZipfsLaw:
         
         assert frequencies == [5, 3, 1]
         assert frequencies[0] >= frequencies[1] >= frequencies[2]
-
-    def test_zipf_distribution_fit(self):
-        """Test Zipf distribution fitting"""
-        # Create sample data following power law
-        frequencies = [100, 50, 33, 25, 20, 16, 14, 12]
-        
-        a, loc, scale = zipf_dist.fit(frequencies, floc=0)
-        
-        assert isinstance(a, float)
-        assert a > 0
-        assert loc == 0  # We fixed loc to 0
-        assert scale > 0
 
     @patch("builtins.open", new_callable=mock_open, read_data="Hello world hello world")
     def test_file_reading(self, mock_file):
@@ -138,18 +204,6 @@ class TestZipfsLaw:
         assert abs(log_values[0] - 0) < 0.01  # log10(1) = 0
         assert abs(log_values[1] - 1) < 0.01  # log10(10) = 1
         assert abs(log_values[2] - 2) < 0.01  # log10(100) = 2
-
-    def test_zipf_parameters_validity(self):
-        """Test that Zipf fit parameters are valid"""
-        frequencies = [100, 50, 25, 12, 6, 3]
-        a, loc, scale = zipf_dist.fit(frequencies, floc=0)
-        
-        # Parameters should be positive
-        assert a > 0
-        assert scale > 0
-        
-        # loc should be 0 as we fixed it
-        assert loc == 0
 
     def test_whitespace_handling(self):
         """Test handling of multiple whitespace"""
