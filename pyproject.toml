@@ -16,6 +16,10 @@ dependencies = [
     "spacy>=3.8.11",
 ]
 
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["utils*"]
+
 [project.scripts]
 simplify = "utils.simplify:main"
 types = "utils.sentence_types:main"
