@@ -1,7 +1,7 @@
 [project]
 name = "nlp-spacy"
 version = "0.1.0"
-description = "Add your description here"
+description = "Natural Language Processing tools using NLTK and spaCy"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
@@ -15,6 +15,10 @@ dependencies = [
     "selenium>=4.39.0",
     "spacy>=3.8.11",
 ]
+
+[project.scripts]
+simplify = "utils.simplify:main"
+types = "utils.sentence_types:main"
 
 [dependency-groups]
 dev = [
