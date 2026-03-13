@@ -170,9 +170,16 @@ class TextSimplifier:
         try:
             self.nlp = spacy.load(spacy_model)
         except OSError:
-            print(f"Error: spaCy model '{spacy_model}' not found.", file=sys.stderr)
-            print(f"Please install it with: python -m spacy download {spacy_model}", file=sys.stderr)
-            sys.exit(1)
+            print(f"spaCy model '{spacy_model}' not found. Downloading...", file=sys.stderr)
+            try:
+                import subprocess
+                subprocess.check_call([sys.executable, "-m", "spacy", "download", spacy_model])
+                self.nlp = spacy.load(spacy_model)
+                print(f"Model '{spacy_model}' downloaded successfully!", file=sys.stderr)
+            except Exception as e:
+                print(f"Error: Failed to download spaCy model '{spacy_model}': {e}", file=sys.stderr)
+                print(f"Please install it manually: python -m spacy download {spacy_model}", file=sys.stderr)
+                sys.exit(1)
         
         self.level = simplification_level
         

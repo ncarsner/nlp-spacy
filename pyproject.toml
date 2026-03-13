@@ -14,19 +14,19 @@ dependencies = [
     "scipy>=1.16.3",
     "selenium>=4.39.0",
     "spacy>=3.8.11",
+    "pydantic>=2.0,<3.0",
 ]
-
-[build-system]
-requires = ["setuptools>=61.0"]
-build-backend = "setuptools.build_meta"
-
-[tool.setuptools.packages.find]
-where = ["."]
-include = ["utils*"]
 
 [project.scripts]
 simplify = "utils.simplify:main"
 types = "utils.sentence_types:main"
+
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["utils"]
 
 [dependency-groups]
 dev = [
