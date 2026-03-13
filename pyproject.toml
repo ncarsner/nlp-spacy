@@ -3,7 +3,7 @@ name = "nlp-spacy"
 version = "0.1.0"
 description = "Natural Language Processing tools using NLTK and spaCy"
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.12,<3.14"
 dependencies = [
     "matplotlib>=3.10.8",
     "nltk>=3.9.2",
@@ -15,6 +15,10 @@ dependencies = [
     "selenium>=4.39.0",
     "spacy>=3.8.11",
 ]
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta
 
 [tool.setuptools.packages.find]
 where = ["."]
