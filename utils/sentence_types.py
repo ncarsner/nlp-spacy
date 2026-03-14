@@ -19,6 +19,7 @@ from typing import List, Tuple
 import spacy
 import nltk
 from nltk.tokenize import sent_tokenize
+import docx
 
 
 class SentenceTypeClassifier:
@@ -126,18 +127,26 @@ class SentenceTypeClassifier:
 
 def read_text_from_file(filepath: str) -> str:
     """
-    Read text from a file.
+    Read text from a file. Supports plain text (.txt) and Word documents (.docx).
     
     Args:
-        filepath: Path to the text file
+        filepath: Path to the text or Word document file
         
     Returns:
-        The contents of the file
+        The contents of the file as a UTF-8 string
     """
     path = Path(filepath)
     if not path.exists():
         print(f"Error: File '{filepath}' not found.", file=sys.stderr)
         sys.exit(1)
+    
+    if path.suffix.lower() == '.docx':
+        try:
+            doc = docx.Document(str(path))
+            return '\n'.join(paragraph.text for paragraph in doc.paragraphs)
+        except Exception as e:
+            print(f"Error reading Word document '{filepath}': {e}", file=sys.stderr)
+            sys.exit(1)
     
     try:
         return path.read_text(encoding='utf-8')
@@ -215,6 +224,8 @@ Examples:
   %(prog)s --file speech.txt
   %(prog)s --file speech.txt --stats
   %(prog)s --file speech.txt --stats --output results.txt
+  %(prog)s --file document.docx
+  %(prog)s --file document.docx --stats
   %(prog)s --text "What is your name?" -o output.txt
         """
     )
@@ -228,7 +239,7 @@ Examples:
     )
     input_group.add_argument(
         '-f', '--file',
-        help='Path to a text file to analyze'
+        help='Path to a text or Word document (.docx) file to analyze'
     )
     input_group.add_argument(
         '-t', '--text',
