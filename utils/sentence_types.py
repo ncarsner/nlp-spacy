@@ -20,6 +20,7 @@ import spacy
 import nltk
 from nltk.tokenize import sent_tokenize
 import docx
+import pypdf
 
 
 class SentenceTypeClassifier:
@@ -127,10 +128,11 @@ class SentenceTypeClassifier:
 
 def read_text_from_file(filepath: str) -> str:
     """
-    Read text from a file. Supports plain text (.txt) and Word documents (.docx).
+    Read text from a file. Supports plain text (.txt), Word documents (.docx),
+    and PDF documents (.pdf).
     
     Args:
-        filepath: Path to the text or Word document file
+        filepath: Path to the text, Word document, or PDF file
         
     Returns:
         The contents of the file as a UTF-8 string
@@ -146,6 +148,19 @@ def read_text_from_file(filepath: str) -> str:
             return '\n'.join(paragraph.text for paragraph in doc.paragraphs)
         except Exception as e:
             print(f"Error reading Word document '{filepath}': {e}", file=sys.stderr)
+            sys.exit(1)
+    
+    if path.suffix.lower() == '.pdf':
+        try:
+            reader = pypdf.PdfReader(str(path))
+            pages_text = []
+            for page in reader.pages:
+                text = page.extract_text()
+                if text:
+                    pages_text.append(text)
+            return '\n'.join(pages_text)
+        except Exception as e:
+            print(f"Error reading PDF file '{filepath}': {e}", file=sys.stderr)
             sys.exit(1)
     
     try:
@@ -226,6 +241,8 @@ Examples:
   %(prog)s --file speech.txt --stats --output results.txt
   %(prog)s --file document.docx
   %(prog)s --file document.docx --stats
+  %(prog)s --file document.pdf
+  %(prog)s --file document.pdf --stats
   %(prog)s --text "What is your name?" -o output.txt
         """
     )
@@ -239,7 +256,7 @@ Examples:
     )
     input_group.add_argument(
         '-f', '--file',
-        help='Path to a text or Word document (.docx) file to analyze'
+        help='Path to a text (.txt), Word document (.docx), or PDF (.pdf) file to analyze'
     )
     input_group.add_argument(
         '-t', '--text',
