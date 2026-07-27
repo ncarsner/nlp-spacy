@@ -128,10 +128,13 @@ def read_text_from_file(filepath: str) -> str:
     """
     Read text from a file. Supports plain text (.txt), Word documents (.docx),
     and PDF documents (.pdf).
-    
+
+    Known limitation: for .docx, only body paragraph text is read; text inside
+    tables (doc.tables) is not extracted.
+
     Args:
         filepath: Path to the text, Word document, or PDF file
-        
+
     Returns:
         The contents of the file as a UTF-8 string
     """
