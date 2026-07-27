@@ -19,8 +19,6 @@ from typing import List, Tuple
 import spacy
 import nltk
 from nltk.tokenize import sent_tokenize
-import docx
-import pypdf
 
 
 class SentenceTypeClassifier:
@@ -144,21 +142,24 @@ def read_text_from_file(filepath: str) -> str:
     
     if path.suffix.lower() == '.docx':
         try:
+            import docx
             doc = docx.Document(str(path))
             return '\n'.join(paragraph.text for paragraph in doc.paragraphs)
         except Exception as e:
             print(f"Error reading Word document '{filepath}': {e}", file=sys.stderr)
             sys.exit(1)
-    
+
     if path.suffix.lower() == '.pdf':
         try:
-            reader = pypdf.PdfReader(str(path))
-            pages_text = []
-            for page in reader.pages:
-                text = page.extract_text()
-                if text:
-                    pages_text.append(text)
-            return '\n'.join(pages_text)
+            import pypdf
+            with open(path, 'rb') as f:
+                reader = pypdf.PdfReader(f)
+                pages_text = []
+                for page in reader.pages:
+                    text = page.extract_text()
+                    if text:
+                        pages_text.append(text)
+                return '\n'.join(pages_text)
         except Exception as e:
             print(f"Error reading PDF file '{filepath}': {e}", file=sys.stderr)
             sys.exit(1)
