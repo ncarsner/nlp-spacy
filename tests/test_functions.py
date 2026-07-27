@@ -1,4 +1,12 @@
+from pathlib import Path
+
+import pytest
+from unittest.mock import Mock, patch, MagicMock
+
+import docx
+
 from utils.functions import remove_punctuation
+from utils.sentence_types import read_text_from_file
 
 
 class TestFunctions:
@@ -52,3 +60,147 @@ class TestFunctions:
         result = remove_punctuation(text)
         assert "   " in result  # Multiple spaces preserved
         assert "  " in result
+
+
+class TestReadTextFromFile:
+    """Test suite for read_text_from_file() in sentence_types.py"""
+
+    def test_read_txt_file(self, tmp_path):
+        """Test reading a plain text file with UTF-8 encoding"""
+        txt_file = tmp_path / "sample.txt"
+        txt_file.write_text("Hello world. How are you?", encoding='utf-8')
+        result = read_text_from_file(str(txt_file))
+        assert result == "Hello world. How are you?"
+
+    def test_read_txt_file_utf8_content(self, tmp_path):
+        """Test reading a plain text file containing non-ASCII UTF-8 characters"""
+        txt_file = tmp_path / "utf8.txt"
+        txt_file.write_text("Héllo wörld!", encoding='utf-8')
+        result = read_text_from_file(str(txt_file))
+        assert result == "Héllo wörld!"
+
+    def test_file_not_found_exits(self, tmp_path):
+        """Test that a missing file causes SystemExit"""
+        with pytest.raises(SystemExit):
+            read_text_from_file(str(tmp_path / "nonexistent.txt"))
+
+    @patch('utils.sentence_types.Path')
+    def test_read_docx_file(self, mock_path_cls):
+        """Test reading a .docx file extracts paragraph text"""
+        mock_path = MagicMock()
+        mock_path.exists.return_value = True
+        mock_path.suffix = '.docx'
+        mock_path.__str__ = lambda self: 'document.docx'
+        mock_path_cls.return_value = mock_path
+
+        mock_para1 = Mock()
+        mock_para1.text = "Hello world."
+        mock_para2 = Mock()
+        mock_para2.text = "How are you?"
+
+        mock_doc = Mock()
+        mock_doc.paragraphs = [mock_para1, mock_para2]
+
+        with patch('docx.Document', return_value=mock_doc):
+            result = read_text_from_file('document.docx')
+
+        assert result == "Hello world.\nHow are you?"
+
+    @patch('utils.sentence_types.Path')
+    def test_read_docx_error_exits(self, mock_path_cls):
+        """Test that a docx reading error causes SystemExit"""
+        mock_path = MagicMock()
+        mock_path.exists.return_value = True
+        mock_path.suffix = '.docx'
+        mock_path.__str__ = lambda self: 'bad.docx'
+        mock_path_cls.return_value = mock_path
+
+        with patch('docx.Document', side_effect=Exception("corrupt file")):
+            with pytest.raises(SystemExit):
+                read_text_from_file('bad.docx')
+
+    def test_read_docx_real_file(self, tmp_path):
+        """Test reading an actual .docx file created with python-docx"""
+        docx_file = tmp_path / "real.docx"
+        doc = docx.Document()
+        doc.add_paragraph("First sentence.")
+        doc.add_paragraph("Second sentence!")
+        doc.save(str(docx_file))
+
+        result = read_text_from_file(str(docx_file))
+        assert "First sentence." in result
+        assert "Second sentence!" in result
+
+    @patch('builtins.open', new_callable=lambda: MagicMock())
+    @patch('utils.sentence_types.Path')
+    def test_read_pdf_file(self, mock_path_cls, mock_open_fn):
+        """Test reading a .pdf file extracts text from all pages"""
+        mock_path = MagicMock()
+        mock_path.exists.return_value = True
+        mock_path.suffix = '.pdf'
+        mock_path.__str__ = lambda self: 'document.pdf'
+        mock_path_cls.return_value = mock_path
+        mock_open_fn.return_value.__enter__.return_value = Mock()
+
+        mock_page1 = Mock()
+        mock_page1.extract_text.return_value = "Hello world."
+        mock_page2 = Mock()
+        mock_page2.extract_text.return_value = "How are you?"
+
+        mock_reader = Mock()
+        mock_reader.pages = [mock_page1, mock_page2]
+
+        with patch('pypdf.PdfReader', return_value=mock_reader):
+            result = read_text_from_file('document.pdf')
+
+        assert result == "Hello world.\nHow are you?"
+
+    @patch('builtins.open', new_callable=lambda: MagicMock())
+    @patch('utils.sentence_types.Path')
+    def test_read_pdf_skips_empty_pages(self, mock_path_cls, mock_open_fn):
+        """Test that pages returning None or empty-string text are skipped"""
+        mock_path = MagicMock()
+        mock_path.exists.return_value = True
+        mock_path.suffix = '.pdf'
+        mock_path.__str__ = lambda self: 'document.pdf'
+        mock_path_cls.return_value = mock_path
+        mock_open_fn.return_value.__enter__.return_value = Mock()
+
+        mock_page1 = Mock()
+        mock_page1.extract_text.return_value = "Hello world."
+        mock_page2 = Mock()
+        mock_page2.extract_text.return_value = None
+        mock_page3 = Mock()
+        mock_page3.extract_text.return_value = ""
+        mock_page4 = Mock()
+        mock_page4.extract_text.return_value = "Final sentence."
+
+        mock_reader = Mock()
+        mock_reader.pages = [mock_page1, mock_page2, mock_page3, mock_page4]
+
+        with patch('pypdf.PdfReader', return_value=mock_reader):
+            result = read_text_from_file('document.pdf')
+
+        assert result == "Hello world.\nFinal sentence."
+
+    @patch('builtins.open', new_callable=lambda: MagicMock())
+    @patch('utils.sentence_types.Path')
+    def test_read_pdf_error_exits(self, mock_path_cls, mock_open_fn):
+        """Test that a PDF reading error causes SystemExit"""
+        mock_path = MagicMock()
+        mock_path.exists.return_value = True
+        mock_path.suffix = '.pdf'
+        mock_path.__str__ = lambda self: 'bad.pdf'
+        mock_path_cls.return_value = mock_path
+        mock_open_fn.return_value.__enter__.return_value = Mock()
+
+        with patch('pypdf.PdfReader', side_effect=Exception("encrypted or corrupted")):
+            with pytest.raises(SystemExit):
+                read_text_from_file('bad.pdf')
+
+    def test_read_pdf_real_file(self):
+        """Test reading an actual tracked PDF fixture with the real pypdf API"""
+        pdf_path = Path(__file__).resolve().parent.parent / "data" / "raw" / "mlb_rules_2023.pdf"
+        result = read_text_from_file(str(pdf_path))
+        assert isinstance(result, str)
+        assert len(result.strip()) > 0
