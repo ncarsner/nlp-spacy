@@ -2,6 +2,7 @@ import pytest
 from unittest.mock import Mock, patch, MagicMock
 
 import docx
+import pypdf
 
 from utils.functions import remove_punctuation
 from utils.sentence_types import read_text_from_file
@@ -128,3 +129,62 @@ class TestReadTextFromFile:
         result = read_text_from_file(str(docx_file))
         assert "First sentence." in result
         assert "Second sentence!" in result
+
+    @patch('utils.sentence_types.Path')
+    def test_read_pdf_file(self, mock_path_cls):
+        """Test reading a .pdf file extracts text from all pages"""
+        mock_path = MagicMock()
+        mock_path.exists.return_value = True
+        mock_path.suffix = '.pdf'
+        mock_path.__str__ = lambda self: 'document.pdf'
+        mock_path_cls.return_value = mock_path
+
+        mock_page1 = Mock()
+        mock_page1.extract_text.return_value = "Hello world."
+        mock_page2 = Mock()
+        mock_page2.extract_text.return_value = "How are you?"
+
+        mock_reader = Mock()
+        mock_reader.pages = [mock_page1, mock_page2]
+
+        with patch('utils.sentence_types.pypdf.PdfReader', return_value=mock_reader):
+            result = read_text_from_file('document.pdf')
+
+        assert result == "Hello world.\nHow are you?"
+
+    @patch('utils.sentence_types.Path')
+    def test_read_pdf_skips_empty_pages(self, mock_path_cls):
+        """Test that pages returning None or empty text are skipped"""
+        mock_path = MagicMock()
+        mock_path.exists.return_value = True
+        mock_path.suffix = '.pdf'
+        mock_path.__str__ = lambda self: 'document.pdf'
+        mock_path_cls.return_value = mock_path
+
+        mock_page1 = Mock()
+        mock_page1.extract_text.return_value = "Hello world."
+        mock_page2 = Mock()
+        mock_page2.extract_text.return_value = None
+        mock_page3 = Mock()
+        mock_page3.extract_text.return_value = "Final sentence."
+
+        mock_reader = Mock()
+        mock_reader.pages = [mock_page1, mock_page2, mock_page3]
+
+        with patch('utils.sentence_types.pypdf.PdfReader', return_value=mock_reader):
+            result = read_text_from_file('document.pdf')
+
+        assert result == "Hello world.\nFinal sentence."
+
+    @patch('utils.sentence_types.Path')
+    def test_read_pdf_error_exits(self, mock_path_cls):
+        """Test that a PDF reading error causes SystemExit"""
+        mock_path = MagicMock()
+        mock_path.exists.return_value = True
+        mock_path.suffix = '.pdf'
+        mock_path.__str__ = lambda self: 'bad.pdf'
+        mock_path_cls.return_value = mock_path
+
+        with patch('utils.sentence_types.pypdf.PdfReader', side_effect=Exception("encrypted or corrupted")):
+            with pytest.raises(SystemExit):
+                read_text_from_file('bad.pdf')
